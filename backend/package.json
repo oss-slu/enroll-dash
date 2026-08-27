@@ -1,5 +1,5 @@
 {
-    "name": "enroll-dash-frontend",
+    "name": "enroll-dash-backend",
     "private": true,
     "version": "0.0.0",
     "type": "module",
@@ -8,21 +8,16 @@
         "build": "tsc -b && vite build",
         "lint": "eslint .",
         "preview": "vite preview",
-        "fmt": "prettier --write *.{ts,tsx,js,jsx,json,html,css,}"
+        "fmt": "prettier --write *.{ts,js,json}"
     },
     "dependencies": {
-        "react": "^19.2.8",
-        "react-dom": "^19.2.8"
+        "express": "^5.2.1"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@types/express": "^5.0.6",
         "@types/node": "^24.13.3",
-        "@types/react": "^19.2.17",
-        "@types/react-dom": "^19.2.3",
-        "@vitejs/plugin-react": "^6.0.4",
         "eslint": "^10.8.0",
-        "eslint-plugin-react-hooks": "^7.1.1",
-        "eslint-plugin-react-refresh": "^0.5.3",
         "globals": "^17.7.0",
         "prettier": "^3.9.6",
         "typescript": "~6.0.2",
