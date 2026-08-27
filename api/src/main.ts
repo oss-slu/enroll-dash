@@ -1,6 +1,6 @@
 import express from 'express';
 import health from './routes/health';
-import geocode from './routes/geocode';
+import geocode from "./routes/geocode";
 
 const PORT = 9876;
 const ROUTES = [health, geocode];
