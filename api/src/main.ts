@@ -1,30 +1,20 @@
 import express from 'express';
-// import { getGeocodeFromAddr } from "./census/getGeocodeFromAddr";
-// import { HttpError } from "./getClient";
+import health from './routes/health';
+import geocode from './routes/geocode';
 
 const PORT = 9876;
+const ROUTES = [health, geocode];
 
-const app = express();
-app.use(express.json());
+function main() {
+    const app = express();
+    app.use(express.json());
 
-app.listen(PORT, () => console.log(`API listening on port ${PORT}`));
+    // register routes
+    ROUTES.forEach(r => app.use(r));
 
-// async function main() {
-//     try {
-//         const result = await getGeocodeFromAddr('1 N Grand Blvd, Saint Louis, MO 63103');
+    // listen for HTTP
+    app.listen(PORT, () => console.log(`API listening on port ${PORT}`));
+}
 
-//         if (!result) {
-//             console.log('No matches');
-//         }
-
-//         console.log(result);
-//     } catch (err) {
-//         if (err instanceof HttpError) {
-//             console.error(`Census API error: ${err.status} ${err.statusText}`);
-//         } else {
-//             throw err;
-//         }
-//     }
-// }
-
-// main();
+// ENTRYPOINT
+main();
