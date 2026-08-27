@@ -4,14 +4,13 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
-        "build": "tsc -b && vite build",
+        "build": "tsup src/main.ts --format esm --target node20 --out-dir dist",
         "lint": "eslint .",
-        "preview": "vite preview",
         "fmt": "prettier --write *.{ts,js,json}"
     },
     "dependencies": {
-        "express": "^5.2.1"
+        "express": "^5.2.1",
+        "tsup": "^8.5.1"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
@@ -21,7 +20,6 @@
         "globals": "^17.7.0",
         "prettier": "^3.9.6",
         "typescript": "~6.0.2",
-        "typescript-eslint": "^8.65.0",
-        "vite": "^8.2.0"
+        "typescript-eslint": "^8.65.0"
     }
 }

@@ -1,5 +1,5 @@
-import { getGeocodeFromAddr } from "./census/getGeocodeFromAddr.ts";
-import { HttpError } from "./getClient.ts";
+import { getGeocodeFromAddr } from "./census/getGeocodeFromAddr";
+import { HttpError } from "./getClient";
 
 async function main() {
     try {

@@ -1,0 +1,16 @@
+services:
+    api:
+        build:
+            context: .
+            dockerfile: api.Dockerfile
+        restart: unless-stopped
+        ports: 
+            - 9876:9876
+        
+    app:
+        build:
+            context: .
+            dockerfile: app.Dockerfile
+        restart: unless-stopped
+        ports:
+            - 80:80
