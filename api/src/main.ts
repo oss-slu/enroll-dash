@@ -1,22 +1,30 @@
-import { getGeocodeFromAddr } from "./census/getGeocodeFromAddr";
-import { HttpError } from "./getClient";
+import express from 'express';
+// import { getGeocodeFromAddr } from "./census/getGeocodeFromAddr";
+// import { HttpError } from "./getClient";
 
-async function main() {
-    try {
-        const result = await getGeocodeFromAddr('1 N Grand Blvd, Saint Louis, MO 63103');
+const PORT = 9876;
 
-        if (!result) {
-            console.log('No matches');
-        }
+const app = express();
+app.use(express.json());
 
-        console.log(result);
-    } catch (err) {
-        if (err instanceof HttpError) {
-            console.error(`Census API error: ${err.status} ${err.statusText}`);
-        } else {
-            throw err;
-        }
-    }
-}
+app.listen(PORT, () => console.log(`API listening on port ${PORT}`));
 
-main();
+// async function main() {
+//     try {
+//         const result = await getGeocodeFromAddr('1 N Grand Blvd, Saint Louis, MO 63103');
+
+//         if (!result) {
+//             console.log('No matches');
+//         }
+
+//         console.log(result);
+//     } catch (err) {
+//         if (err instanceof HttpError) {
+//             console.error(`Census API error: ${err.status} ${err.statusText}`);
+//         } else {
+//             throw err;
+//         }
+//     }
+// }
+
+// main();
