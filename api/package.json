@@ -1,0 +1,26 @@
+{
+    "name": "enroll-dash-backend",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "build": "tsup src/main.ts --format esm --target node20 --out-dir dist",
+        "lint": "eslint .",
+        "fmt": "prettier --write **/*.{ts,js,json}"
+    },
+    "dependencies": {
+        "express": "^5.2.1"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@types/express": "^5.0.6",
+        "@types/node": "^24.13.3",
+        "eslint": "^10.8.0",
+        "globals": "^17.7.0",
+        "jiti": "^2.7.0",
+        "prettier": "^3.9.6",
+        "tsup": "^8.5.1",
+        "typescript": "~6.0.2",
+        "typescript-eslint": "^8.65.0"
+    }
+}

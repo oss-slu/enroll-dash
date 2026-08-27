@@ -1,0 +1,19 @@
+services:
+    api:
+        build:
+            context: .
+            dockerfile: api.Dockerfile
+        restart: unless-stopped
+        ports: 
+            - 9876:9876
+        
+    app:
+        build:
+            context: .
+            dockerfile: app.Dockerfile
+        restart: unless-stopped
+        ports:
+            - 80:80
+        volumes:
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+            - ./app/index.html:/app/index.html:ro
