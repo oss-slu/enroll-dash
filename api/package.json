@@ -6,7 +6,7 @@
     "scripts": {
         "build": "tsup src/main.ts --format esm --target node20 --out-dir dist",
         "lint": "eslint .",
-        "fmt": "prettier --write *.{ts,js,json}"
+        "fmt": "prettier --write **/*.{ts,js,json}"
     },
     "dependencies": {
         "express": "^5.2.1"
@@ -17,6 +17,7 @@
         "@types/node": "^24.13.3",
         "eslint": "^10.8.0",
         "globals": "^17.7.0",
+        "jiti": "^2.7.0",
         "prettier": "^3.9.6",
         "tsup": "^8.5.1",
         "typescript": "~6.0.2",

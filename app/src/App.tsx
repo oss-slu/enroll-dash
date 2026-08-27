@@ -1,9 +1,7 @@
 function App() {
     return (
         <>
-            <main>
-                Hello, world
-            </main>   
+            <main>Open Source with SLU | Enrollment Dashboard</main>
         </>
     );
 }

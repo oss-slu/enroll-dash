@@ -1,38 +1,30 @@
+import HttpError from "./err";
+
 export interface requestOptions {
     headers?: Record<string, string>;
     signal?: AbortSignal;
     timeoutMs?: number;
 }
 
-export class HttpError extends Error {
-  readonly status: number;
-  readonly statusText: string;
-  readonly url: string;
-  readonly body?: unknown;
-
-  constructor(status: number, statusText: string, url: string, body?: unknown) {
-    super(`HTTP ${status} ${statusText} for ${url}`);
-    this.name = "HttpError";
-    this.status = status;
-    this.statusText = statusText;
-    this.url = url;
-    this.body = body;
-  }
-}
-
 const DEFAULT_HEADERS: Record<string, string> = {
-    Accept: 'application/json'
+    Accept: 'application/json',
 };
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
-export async function getJSON<T>(url: string, options: requestOptions = {}): Promise<T> {
-    const { headers = {}, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = options; 
+// Send an HTTP GET request expecting JSON response of type <T>
+export default async function getJson<T>(
+    url: string,
+    options: requestOptions = {},
+): Promise<T> {
+    const { headers = {}, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     if (signal) {
-        signal.addEventListener('abort', () => controller.abort(), { once: true });
+        signal.addEventListener('abort', () => controller.abort(), {
+            once: true,
+        });
     }
 
     try {
@@ -44,18 +36,22 @@ export async function getJSON<T>(url: string, options: requestOptions = {}): Pro
 
         if (!resp.ok) {
             let body: unknown;
+            let parseErr: unknown;
             try {
                 body = await resp.json();
-            } catch {
+            } catch (err) {
+                parseErr = err;
                 body = await resp.text().catch(() => undefined);
             }
-            throw new HttpError(resp.status, resp.statusText, url, body);
+            throw new HttpError(resp.status, resp.statusText, url, body, { cause: parseErr });
         }
         return (await resp.json()) as T;
     } catch (err) {
-        if (err instanceof HttpError) throw err;
+        if (err instanceof HttpError) {
+            throw err;
+        }
         if (err instanceof Error && err.name === 'AbortError') {
-            throw new Error(`Request to ${url} timed out after ${timeoutMs}`);
+            throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`, { cause: err });
         }
         throw err;
     } finally {

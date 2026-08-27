@@ -1,4 +1,4 @@
-import { getJSON } from "../getClient";
+import getJson from "../http/getJson";
 
 const CENSUS_GEOCODER_BASE = "https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress";
 
@@ -37,7 +37,7 @@ export interface geocodeBlockResult {
     blkgrp: string;
 }
 
-export async function getGeocodeFromAddr(address: string): Promise<geocodeBlockResult | null> {
+export default async function getGeocodeFromAddr(address: string): Promise<geocodeBlockResult | null> {
     const params = new URLSearchParams({
         address,
         benchmark: "Public_AR_Current",
@@ -48,7 +48,7 @@ export async function getGeocodeFromAddr(address: string): Promise<geocodeBlockR
 
     const url = `${CENSUS_GEOCODER_BASE}?${params.toString()}`;
 
-    const data = await getJSON<censusGeocodeResp>(url);
+    const data = await getJson<censusGeocodeResp>(url);
     
     const match = data.result.addressMatches[0];
     if (!match) return null;
