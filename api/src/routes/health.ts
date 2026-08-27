@@ -5,8 +5,8 @@ const router = Router();
 router.get('/health', (_req, res) => {
     res.json({
         ok: true,
-        message: `express server is healthy`
+        message: `express server is healthy`,
     });
 });
 
-export default router; 
+export default router;

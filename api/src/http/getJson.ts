@@ -1,4 +1,4 @@
-import HttpError from "./err";
+import HttpError from './err';
 
 export interface requestOptions {
     headers?: Record<string, string>;
@@ -43,7 +43,9 @@ export default async function getJson<T>(
                 parseErr = err;
                 body = await resp.text().catch(() => undefined);
             }
-            throw new HttpError(resp.status, resp.statusText, url, body, { cause: parseErr });
+            throw new HttpError(resp.status, resp.statusText, url, body, {
+                cause: parseErr,
+            });
         }
         return (await resp.json()) as T;
     } catch (err) {
@@ -51,7 +53,10 @@ export default async function getJson<T>(
             throw err;
         }
         if (err instanceof Error && err.name === 'AbortError') {
-            throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`, { cause: err });
+            throw new Error(
+                `Request to ${url} timed out after ${timeoutMs}ms`,
+                { cause: err },
+            );
         }
         throw err;
     } finally {
