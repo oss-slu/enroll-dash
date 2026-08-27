@@ -10,7 +10,7 @@
         "allowArbitraryExtensions": true,
         "skipLibCheck": true,
         "verbatimModuleSyntax": true,
-        
+
         /* Linting */
         "noUnusedLocals": true,
         "noUnusedParameters": true,
