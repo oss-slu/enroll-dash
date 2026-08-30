@@ -7,6 +7,7 @@
     - Typescript 
     - React
     - Vite
+    - Nginx
 
 - ### <u>Backend</u>
     ### */api*
