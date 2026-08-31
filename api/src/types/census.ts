@@ -5,7 +5,7 @@ export type censusBlock = {
     TRACT: string;
     BLKGRP: string;
     BASENAME: string;
-}
+};
 
 export type censusAddress = {
     matchedAddress: string;
@@ -13,14 +13,14 @@ export type censusAddress = {
     geographies: {
         'Census Block Groups'?: censusBlock[];
     };
-}
+};
 
 export type censusGeocodeResp = {
     result: {
         input: { address: { address: string } };
         addressMatches: censusAddress[];
     };
-}
+};
 
 export type geocodeBlockResult = {
     matchedAddress: string;
@@ -31,4 +31,4 @@ export type geocodeBlockResult = {
     county: string;
     tract: string;
     blkgrp: string;
-}
+};
