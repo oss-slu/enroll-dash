@@ -1,14 +1,16 @@
 import { Router } from 'express';
 import HttpError from '../errs/http';
 import { getGeocodeFromAddr } from '../utils/census';
+import type { addressFromUser } from '../types/census';
 
 const router = Router();
 
+// User sends an address as { addr: string }, call the Geocoder API, return response
 router.post('/geocode', async (req, res) => {
-    const fromUser = req.body.addr;
+    const fromUser: addressFromUser = req.body;
 
     try {
-        const result = await getGeocodeFromAddr(fromUser);
+        const result = await getGeocodeFromAddr(fromUser.addr);
 
         if (!result) {
             res.json({
