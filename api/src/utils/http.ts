@@ -1,5 +1,5 @@
-import type { requestOptions } from "../types/http";
-import HttpError from "../errs/http";
+import type { requestOptions } from '../types/http';
+import HttpError from '../errs/http';
 
 const DEFAULT_HEADERS: Record<string, string> = {
     Accept: 'application/json',
