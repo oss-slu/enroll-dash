@@ -1,10 +1,5 @@
-import HttpError from './err';
-
-export interface requestOptions {
-    headers?: Record<string, string>;
-    signal?: AbortSignal;
-    timeoutMs?: number;
-}
+import type { requestOptions } from "../types/http";
+import HttpError from "../errs/http";
 
 const DEFAULT_HEADERS: Record<string, string> = {
     Accept: 'application/json',
@@ -13,7 +8,7 @@ const DEFAULT_HEADERS: Record<string, string> = {
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 // Send an HTTP GET request expecting JSON response of type <T>
-export default async function getJson<T>(
+export async function getJson<T>(
     url: string,
     options: requestOptions = {},
 ): Promise<T> {

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import getGeocodeFromAddr from '../census/getGeocodeFromAddr';
-import HttpError from '../http/err';
+import HttpError from '../errs/http';
+import { getGeocodeFromAddr } from '../utils/census';
 
 const router = Router();
 
