@@ -1,4 +1,4 @@
-name: backend tests
+name: frontend tests
 on: [push, pull_request]
 
 jobs:
@@ -17,5 +17,5 @@ jobs:
               with:
                 node-version: 24
 
-            - name: run backend tests
-              run: cd api && npm ci && npm run test
+            - name: run frontend tests
+              run: cd app && npm ci && npm run test
