@@ -2,8 +2,16 @@ import { Router } from 'express';
 import HttpError from '../errs/http';
 import { getGeocodeFromAddr } from '../utils/census';
 import type { addressFromUser } from '../types/census';
+import { MMDDYY_HHMMSS } from '../utils/datetime';
 
 const router = Router();
+
+router.get('/geocode', async (_req, res) => {
+    res.json({
+        ok: true,
+        message: `/geocode endpoint available at ${MMDDYY_HHMMSS(new Date())}`,
+    });
+ })
 
 // User sends an address as { addr: string }, call the Geocoder API, return response
 router.post('/geocode', async (req, res) => {

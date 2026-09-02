@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "build": "tsup src/main.ts --format esm --target node20 --out-dir dist",
+        "test": "node --experimental-vm-modules node_modules/.bin/jest",
         "lint": "eslint .",
         "fmt": "prettier --write **/*.{ts,js,json}"
     },
@@ -13,12 +14,16 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@types/cors": "^2.8.19",
         "@types/express": "^5.0.6",
         "@types/node": "^24.13.3",
+        "cors": "^2.8.6",
         "eslint": "^10.8.0",
         "globals": "^17.7.0",
+        "jest": "^30.5.1",
         "jiti": "^2.7.0",
         "prettier": "^3.9.6",
+        "ts-jest": "^29.4.12",
         "tsup": "^8.5.1",
         "typescript": "~6.0.2",
         "typescript-eslint": "^8.65.0"

@@ -1,16 +1,10 @@
-import express from 'express';
-import health from './routes/health';
-import geocode from './routes/geocode';
+import { createApp } from './app';
+import { VITE_ORIGIN } from './consts';
 
 const PORT = 9876;
-const ROUTES = [health, geocode];
 
 function main() {
-    const app = express();
-    app.use(express.json());
-
-    // register routes
-    ROUTES.forEach((r) => app.use(r));
+    const app = createApp(VITE_ORIGIN);
 
     // listen for HTTP
     app.listen(PORT, () => console.log(`API listening on port ${PORT}`));

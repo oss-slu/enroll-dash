@@ -15,7 +15,9 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "erasableSyntaxOnly": false,
-        "noFallthroughCasesInSwitch": true
+        "noFallthroughCasesInSwitch": true,
+
+        "types": ["node", "jest"]
     },
     "include": ["src"]
 }
