@@ -1,0 +1,21 @@
+name: backend tests
+on: [push, pull_request]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: checkout
+              uses: actions/checkout@v4
+              with:
+                ref: ${{ github.head_ref }}
+
+            - name: setup node
+              uses: actions/setup-node@v4
+              with:
+                node-version: 24
+
+            - name: run backend tests
+              run: cd api && npm ci && npm run test
