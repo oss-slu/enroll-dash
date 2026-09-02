@@ -12,7 +12,7 @@ export function createApp(origin?: string) {
     const app = express();
     app.use(express.json());
     app.use(cors({ origin: origin, credentials: true }));
-    
+
     // register routes
     ROUTES.forEach((r) => app.use(r.router));
 

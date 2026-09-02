@@ -11,7 +11,7 @@ router.get('/geocode', async (_req, res) => {
         ok: true,
         message: `/geocode endpoint available at ${MMDDYY_HHMMSS(new Date())}`,
     });
- })
+});
 
 // User sends an address as { addr: string }, call the Geocoder API, return response
 router.post('/geocode', async (req, res) => {
