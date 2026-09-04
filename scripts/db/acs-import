@@ -1,1 +1,101 @@
 #!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly DUMP_URL='https://backup.censusreporter.org/census-reporter-extracts/acs2024_5yr_backup.sql.gz'
+readonly SOURCE_SCHEMA='acs2024_5yr'
+readonly TARGET_SCHEMA='acs'
+readonly SETUP_SQL='/docker-entrypoint-initdb.d/010-setup.sql'
+
+: "${POSTGRES_USER:?POSTGRES_USER must be set}"
+: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}"
+: "${PGDATABASE:?PGDATABASE must be set}"
+: "${PGUSER:?PGUSER must be set}"
+: "${PGPASSWORD:?PGPASSWORD must be set}"
+
+run_as_database_owner() {
+    PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+        --no-psqlrc \
+        --set=ON_ERROR_STOP=1 \
+        --username="${POSTGRES_USER}" \
+        --dbname="${PGDATABASE}" \
+        "$@"
+}
+
+apply_database_setup() {
+    APPLICATION_USER="${PGUSER}" \
+        APPLICATION_PASSWORD="${PGPASSWORD}" \
+        run_as_database_owner --file="${SETUP_SQL}"
+}
+
+verify_application_access() {
+    PGPASSWORD="${PGPASSWORD}" psql \
+        --no-psqlrc \
+        --set=ON_ERROR_STOP=1 \
+        --set=acs_schema="${TARGET_SCHEMA}" \
+        --host=127.0.0.1 \
+        --username="${PGUSER}" \
+        --dbname="${PGDATABASE}" <<'SQL'
+SELECT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_tables
+    WHERE schemaname = :'acs_schema'
+) AS has_acs_table \gset
+
+\if :has_acs_table
+    SELECT format(
+        'SELECT 1 FROM %I.%I LIMIT 1',
+        schemaname,
+        tablename
+    )
+    FROM pg_catalog.pg_tables
+    WHERE schemaname = :'acs_schema'
+    ORDER BY tablename
+    LIMIT 1 \gexec
+\else
+    \echo 'No table found in the ACS schema.'
+    \quit 1
+\endif
+SQL
+}
+
+echo "Preparing the ${SOURCE_SCHEMA} staging schema..."
+run_as_database_owner --command="DROP SCHEMA IF EXISTS ${SOURCE_SCHEMA} CASCADE;"
+
+echo "Downloading and restoring ${DUMP_URL}..."
+# The dump assigns objects to its original `postgres` role. Dropping those
+# ownership statements keeps the objects owned by the configured database owner
+# and allows POSTGRES_USER to be customized.
+restore_status=0
+curl --fail --location --retry 3 --show-error --silent "${DUMP_URL}" \
+    | gzip -dc \
+    | sed '/ OWNER TO postgres;$/d' \
+    | PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+        --no-psqlrc \
+        --set=ON_ERROR_STOP=1 \
+        --username="${POSTGRES_USER}" \
+        --dbname="${PGDATABASE}" || restore_status=$?
+
+# Apply grants even when the dump fails after creating some tables. Without
+# this, `set -e` exits before the application role is authorized, leaving a
+# populated staging schema that only the database owner can query.
+apply_database_setup
+
+if ((restore_status != 0)); then
+    echo "ACS restoration failed with status ${restore_status}." >&2
+    exit "${restore_status}"
+fi
+
+run_as_database_owner <<'SQL'
+BEGIN;
+
+DROP SCHEMA IF EXISTS acs CASCADE;
+ALTER SCHEMA acs2024_5yr RENAME TO acs;
+
+COMMIT;
+SQL
+
+echo "Verifying ${PGUSER} can query the ${TARGET_SCHEMA} schema..."
+verify_application_access
+
+echo "ACS restoration complete in database ${PGDATABASE}, schema ${TARGET_SCHEMA}."
