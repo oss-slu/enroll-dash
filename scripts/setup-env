@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly PROJECT_ROOT
+readonly ENV_TEMPLATE="${PROJECT_ROOT}/.env.example"
+readonly ENV_FILE="${PROJECT_ROOT}/.env"
+
+if [[ -e "${ENV_FILE}" ]]; then
+    echo "Refusing to overwrite existing ${ENV_FILE}." >&2
+    exit 1
+fi
+
+if ! command -v openssl >/dev/null 2>&1; then
+    echo 'openssl is required to generate database passwords.' >&2
+    exit 1
+fi
+
+ADMIN_PASSWORD="$(openssl rand -hex 32)"
+APPLICATION_PASSWORD="$(openssl rand -hex 32)"
+readonly ADMIN_PASSWORD APPLICATION_PASSWORD
+
+umask 077
+set -o noclobber
+sed \
+    -e "s/CHANGE_ME_TO_A_RANDOM_ADMIN_PASSWORD/${ADMIN_PASSWORD}/" \
+    -e "s/CHANGE_ME_TO_A_DIFFERENT_RANDOM_APP_PASSWORD/${APPLICATION_PASSWORD}/" \
+    "${ENV_TEMPLATE}" >"${ENV_FILE}"
+
+echo "Created ${ENV_FILE} with random database passwords."
