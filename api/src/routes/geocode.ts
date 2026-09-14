@@ -2,15 +2,42 @@ import { Router } from 'express';
 import HttpError from '../errs/http';
 import { getGeocodeFromAddr } from '../utils/census';
 import type { addressFromUser } from '../types/census';
-import { MMDDYY_HHMMSS } from '../utils/datetime';
 
 const router = Router();
 
-router.get('/geocode', async (_req, res) => {
-    res.json({
-        ok: true,
-        message: `/geocode endpoint available at ${MMDDYY_HHMMSS(new Date())}`,
-    });
+router.get('/geocode', async (req, res) => {
+    const addr = req.query.addr as string;
+
+    if (!addr) {
+        return res.status(400).json({
+            ok: false,
+            error: 'Missing required query parameter: addr',
+        });
+    }
+    try {
+        const result = await getGeocodeFromAddr(addr);
+        
+        if (!result) {
+            return res.json({
+                ok: false,
+                error: `No address matches for ${addr}`,
+            });
+        }
+
+        return res.json(result);
+    } catch (err) {
+        if (err instanceof HttpError) {
+            return res.json({
+                ok: false,
+                error: `Census API error: ${err.status} ${err.statusText}`,
+            });
+        } else {
+            return res.json({
+                ok: false,
+                error: `Unexpected error: ${err}`,
+            });
+        }
+    }
 });
 
 // User sends an address as { addr: string }, call the Geocoder API, return response
