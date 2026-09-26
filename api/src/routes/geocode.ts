@@ -16,7 +16,7 @@ router.get('/geocode', async (req, res) => {
     }
     try {
         const result = await getGeocodeFromAddr(addr);
-        
+
         if (!result) {
             return res.json({
                 ok: false,
