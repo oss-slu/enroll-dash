@@ -36,3 +36,9 @@ export type geocodeBlockResult = {
 export type addressFromUser = {
     addr: string;
 };
+
+export type addressValidationResult = {
+    ok: boolean;
+    original: string;
+    suggested?: string;
+};
