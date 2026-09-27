@@ -1,21 +1,31 @@
-import { Router } from 'express';
+import { Router, type RequestHandler } from 'express';
 import HttpError from '../errs/http';
 import { getGeocodeFromAddr } from '../utils/census';
-import type { addressFromUser } from '../types/census';
+import { validateAddress } from '../utils/validateAddress';
 
 const router = Router();
 
-router.get('/geocode', async (req, res) => {
-    const addr = req.query.addr as string;
+const geocode: RequestHandler = async (req, res) => {
+    const addr: unknown =
+        req.method === 'POST' ? req.body?.addr : req.query.addr;
 
-    if (!addr) {
+    if (typeof addr !== 'string' || !addr) {
         return res.status(400).json({
             ok: false,
-            error: 'Missing required query parameter: addr',
+            error: 'addr must be a non-empty string',
         });
     }
+
+    const validation = validateAddress(addr);
+    if (!validation.ok) {
+        return res.status(400).json({
+            ...validation,
+            error: 'Unsupported address format',
+        });
+    }
+
     try {
-        const result = await getGeocodeFromAddr(addr);
+        const result = await getGeocodeFromAddr(validation.original);
 
         if (!result) {
             return res.json({
@@ -38,36 +48,9 @@ router.get('/geocode', async (req, res) => {
             });
         }
     }
-});
+};
 
-// User sends an address as { addr: string }, call the Geocoder API, return response
-router.post('/geocode', async (req, res) => {
-    const fromUser: addressFromUser = req.body;
-
-    try {
-        const result = await getGeocodeFromAddr(fromUser.addr);
-
-        if (!result) {
-            res.json({
-                ok: false,
-                error: `No address matches for ${fromUser}`,
-            });
-        }
-        res.json(result);
-    } catch (err) {
-        if (err instanceof HttpError) {
-            res.json({
-                ok: false,
-                error: `Census API error: ${err.status} ${err.statusText}`,
-            });
-        } else {
-            res.json({
-                ok: false,
-                error: `Unexpected error: ${err}`,
-            });
-            throw err;
-        }
-    }
-});
+router.get('/geocode', geocode);
+router.post('/geocode', geocode);
 
 export default router;
