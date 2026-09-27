@@ -10,7 +10,8 @@
         "fmt": "prettier --write **/*.{ts,js,json}"
     },
     "dependencies": {
-        "express": "^5.2.1"
+        "express": "^5.2.1",
+        "xlsx": "^0.18.5"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
