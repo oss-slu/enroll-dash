@@ -2,10 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import health from './routes/health';
 import geocode from './routes/geocode';
+import upload from './routes/upload';
 
 export const ROUTES = [
     { router: health, route: '/health' },
     { router: geocode, route: '/geocode' },
+    { router: upload, route: '/upload' },
 ];
 
 export function createApp(origin?: string) {
