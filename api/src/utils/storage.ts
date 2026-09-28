@@ -12,14 +12,18 @@ const getSafeTempDir = (sessionId: string): string => {
     return tempDir;
 };
 
-export const saveSessionFile = async (sessionId: string, filename: string, buffer: Buffer): Promise<string> => {
+export const saveSessionFile = async (
+    sessionId: string,
+    filename: string,
+    buffer: Buffer,
+): Promise<string> => {
     const tempDir = getSafeTempDir(sessionId);
     await fs.promises.mkdir(tempDir, { recursive: true });
-    
+
     // Ensure filename doesn't contain path traversal characters
-    const safeFilename = path.basename(filename); 
+    const safeFilename = path.basename(filename);
     const outputPath = path.resolve(tempDir, safeFilename);
-    
+
     await fs.promises.writeFile(outputPath, buffer);
     return outputPath;
 };

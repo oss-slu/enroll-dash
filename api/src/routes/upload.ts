@@ -74,7 +74,7 @@ router.post(
 );
 
 router.delete('/upload/:sessionId', fileOpLimiter, async (req, res) => {
-    const  sessionId  = req.params.sessionId as string;
+    const sessionId = req.params.sessionId as string;
 
     const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
