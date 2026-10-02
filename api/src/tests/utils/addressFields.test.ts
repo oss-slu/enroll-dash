@@ -46,23 +46,19 @@ describe('findAddressFields', () => {
         ]);
     });
 
-
     it('finds an address even when the field name does not suggest an address', () => {
-    const filePath = path.join(tempDir, 'addresses.csv');
+        const filePath = path.join(tempDir, 'addresses.csv');
 
-    fs.writeFileSync(
-        filePath,
-        [
-            'name,location,city',
-            'Darcy,"6957 Chippewa St, Saint Louis, MO 63109",St. Louis',
-        ].join('\n'),
-    );
+        fs.writeFileSync(
+            filePath,
+            [
+                'name,location,city',
+                'Darcy,"6957 Chippewa St, Saint Louis, MO 63109",St. Louis',
+            ].join('\n'),
+        );
 
-    expect(findAddressFields(filePath)).toEqual(['location']);
-});
-
-
-
+        expect(findAddressFields(filePath)).toEqual(['location']);
+    });
 
     it('does not return a field when its first value is not a valid address', () => {
         const filePath = path.join(tempDir, 'addresses.csv');
