@@ -5,19 +5,22 @@
     "type": "module",
     "scripts": {
         "build": "tsup src/main.ts --format esm --target node20 --out-dir dist",
-        "test": "node --experimental-vm-modules node_modules/.bin/jest",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
         "lint": "eslint .",
         "fmt": "prettier --write **/*.{ts,js,json}"
     },
     "dependencies": {
         "express": "^5.2.1",
         "xlsx": "^0.18.5"
+        "express-rate-limit": "^8.7.0",
+        "multer": "^2.4.0"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.6",
         "@types/jest": "^30.0.0",
+        "@types/multer": "^2.2.0",
         "@types/node": "^24.13.3",
         "@types/supertest": "^7.2.1",
         "cors": "^2.8.6",

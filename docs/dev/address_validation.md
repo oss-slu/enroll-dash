@@ -31,6 +31,20 @@ with `ok: false` may include `suggested` for an unambiguous formatting repair;
 the suggestion is independently revalidated before it is returned. Callers
 choose whether to use it.
 
+## Geocode endpoints
+
+Both `GET /geocode?addr=...` and `POST /geocode` with `{ "addr": "..." }`
+validate input before calling Census. Missing, empty, or non-string `addr`
+values return HTTP 400 with `{ "ok": false, "error": "addr must be a non-empty string" }`.
+Rejected address strings return HTTP 400 with `ok: false`, `original`, an
+`error` message, and `suggested` when a safe formatting correction is available.
+No Census request is made for rejected input. A caller must explicitly accept
+and resubmit a suggestion; valid addresses are sent unchanged. Successful
+geocode and upstream error response shapes are unchanged.
+
+The `getGeocodeFromAddr` helper itself does not validate input; callers outside
+these routes should use the validation sequence above.
+
 ## Supported structure
 
 The minimum structure is a numeric house number followed by street text. House
