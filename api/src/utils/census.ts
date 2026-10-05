@@ -1,9 +1,11 @@
 import type { censusGeocodeResp, geocodeBlockResult } from '../types/census';
 import { CENSUS_GEOCODER_BASE } from '../consts';
 import { getJson } from '../utils/http';
+import type { requestOptions } from '../types/http';
 
 export async function getGeocodeFromAddr(
     address: string,
+    options: requestOptions = {},
 ): Promise<geocodeBlockResult | null> {
     const params = new URLSearchParams({
         address,
@@ -15,7 +17,7 @@ export async function getGeocodeFromAddr(
 
     const url = `${CENSUS_GEOCODER_BASE}?${params.toString()}`;
 
-    const data = await getJson<censusGeocodeResp>(url);
+    const data = await getJson<censusGeocodeResp>(url, options);
 
     const match = data.result.addressMatches[0];
     if (!match) return null;
