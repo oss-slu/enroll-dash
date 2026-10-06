@@ -11,9 +11,9 @@
     },
     "dependencies": {
         "express": "^5.2.1",
-        "xlsx": "^0.18.5",
         "express-rate-limit": "^8.7.0",
-        "multer": "^2.4.0"
+        "multer": "^2.4.0",
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
