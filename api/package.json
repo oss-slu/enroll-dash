@@ -13,7 +13,9 @@
         "express": "^5.2.1",
         "express-rate-limit": "^8.7.0",
         "multer": "^2.4.0",
-        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+        "pg": "^8.23.1",
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+        "zod": "^4.6.5"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
@@ -22,6 +24,7 @@
         "@types/jest": "^30.0.0",
         "@types/multer": "^2.2.0",
         "@types/node": "^24.13.3",
+        "@types/pg": "^8.23.1",
         "@types/supertest": "^7.2.1",
         "cors": "^2.8.6",
         "eslint": "^10.8.0",
