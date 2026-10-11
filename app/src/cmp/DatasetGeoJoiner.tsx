@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { DATA_SOURCE_OPTIONS, type DataSource } from '../consts';
@@ -99,17 +98,13 @@ function DatasetGeoJoiner() {
             const formData = new FormData();
             formData.append('file', file);
 
-            const uploadResponse = await fetch(
-                `${API_BASE_URL}/upload`,
-                {
-                    method: 'POST',
-                    body: formData,
-                },
-            );
+            const uploadResponse = await fetch(`${API_BASE_URL}/upload`, {
+                method: 'POST',
+                body: formData,
+            });
 
             const uploadResult = (await uploadResponse.json()) as
-                | UploadResponse
-                | { error?: string };
+                UploadResponse | { error?: string };
 
             if (
                 !uploadResponse.ok ||
@@ -184,7 +179,9 @@ function DatasetGeoJoiner() {
 
             {dataSource === 'File Upload' ? (
                 <>
-                    <label htmlFor="dataset-file">Upload CSV or Excel file</label>
+                    <label htmlFor="dataset-file">
+                        Upload CSV or Excel file
+                    </label>
                     <input
                         id="dataset-file"
                         type="file"
@@ -225,9 +222,7 @@ function DatasetGeoJoiner() {
                     <button
                         type="button"
                         disabled={!joinField}
-                        onClick={() =>
-                            console.log(`Geocode ${joinField}`)
-                        }
+                        onClick={() => console.log(`Geocode ${joinField}`)}
                     >
                         Geocode {joinField || 'field'}
                     </button>
@@ -256,11 +251,15 @@ function DatasetGeoJoiner() {
                             <tbody>
                                 {visibleRows.map((row, rowIndex) => (
                                     <tr key={rowIndex}>
-                                        {preview.headers.map((_, columnIndex) => (
-                                            <td key={columnIndex}>
-                                                {String(row[columnIndex] ?? '')}
-                                            </td>
-                                        ))}
+                                        {preview.headers.map(
+                                            (_, columnIndex) => (
+                                                <td key={columnIndex}>
+                                                    {String(
+                                                        row[columnIndex] ?? '',
+                                                    )}
+                                                </td>
+                                            ),
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>
@@ -270,7 +269,9 @@ function DatasetGeoJoiner() {
                     {preview.rows.length > PREVIEW_LIMIT && (
                         <button
                             type="button"
-                            onClick={() => setShowAllRows((current) => !current)}
+                            onClick={() =>
+                                setShowAllRows((current) => !current)
+                            }
                         >
                             {showAllRows ? 'Show fewer rows' : 'Show more rows'}
                         </button>
