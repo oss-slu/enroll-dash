@@ -1,7 +1,12 @@
+import DatasetGeoJoiner from './DatasetGeoJoiner';
+
 function App() {
     return (
         <>
-            <main>Open Source with SLU | Enrollment Dashboard</main>
+            <main>
+                <h1>Open Source with SLU | Enrollment Dashboard</h1>
+                <DatasetGeoJoiner />
+            </main>
         </>
     );
 }

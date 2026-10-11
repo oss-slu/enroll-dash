@@ -1,3 +1,6 @@
 .env
 .DS_Store
 node_modules
+# Generated build files
+api/dist/
+app/tsconfig.tsbuildinfo
