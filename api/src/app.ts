@@ -13,7 +13,7 @@ export const ROUTES = [
     { router: health, route: '/health' },
     { router: upload, route: '/upload' },
     { router: geocode, route: '/geocode' },
-    { router: dbHealth, route: '/db-health '}, 
+    { router: dbHealth, route: '/db-health ' },
     { router: addressFields, route: '/address-fields' },
     { router: geocodeFile, route: '/geocode-file' },
     { router: datasetFile, route: '/dataset-file' },

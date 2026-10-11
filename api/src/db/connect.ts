@@ -14,7 +14,8 @@ export const pool = new pg.Pool({
 pool.on('error', (err) => console.error('Unexpected PG pool error', err));
 
 export function query<R extends QueryResultRow = QueryResultRow>(
-    text: string, params?: unknown[],
+    text: string,
+    params?: unknown[],
 ): Promise<QueryResult<R>> {
     return pool.query<R>(text, params);
 }
