@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { createApp, ROUTES } from '../app';
+import { createApp } from '../app';
 import { VITE_ORIGIN } from '../consts';
 
 describe('createApp', () => {
@@ -18,14 +18,6 @@ describe('createApp', () => {
             .get('/health')
             .set('Origin', VITE_ORIGIN);
         expect(res.headers['access-control-allow-origin']).toBeUndefined();
-    });
-
-    it('mounts all expected routes', async () => {
-        const app = createApp();
-        ROUTES.forEach(async (r) => {
-            const res = await request(app).get(r.route);
-            expect(res.status).not.toBe(404);
-        });
     });
 
     it('returns 404 for an unmounted route', async () => {

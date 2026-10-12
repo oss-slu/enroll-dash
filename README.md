@@ -80,3 +80,9 @@ To connect with a locally installed `psql`, export the standard `PG*` variables
 from `.env`, then run `psql`. The default host connection is
 `localhost:5432`; change `PGPORT` before the first Compose run if that port is
 already in use.
+
+## File geocoding API
+
+Upload and enrich CSV or Excel datasets, or save a dataset directly. See the
+[file enrichment endpoint contract](docs/dev/geocoder_file_enrichment.md) for
+options, limits, export behavior, and session cleanup.

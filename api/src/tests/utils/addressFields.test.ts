@@ -81,7 +81,10 @@ describe('findAddressFields', () => {
         ]);
 
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-        XLSX.writeFile(workbook, filePath);
+        fs.writeFileSync(
+            filePath,
+            XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }),
+        );
 
         expect(findAddressFields(filePath)).toEqual(['address']);
     });

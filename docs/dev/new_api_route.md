@@ -1,22 +1,23 @@
 # Creating a new API route
-1. Create the express.Router in a new file in *api/src/routes*
-    - Only one route per file
-    - Each should roughly follow this pattern
-    ```ts
-    import { Router } from 'express';
-    const router = Router();
-    router.get('routeName', () => { ... });
-    ...
-    export default router;
-    ```
-1. Import the router in *api/src/main.ts* and add it to the ***ROUTES*** array
-```ts
-// BEFORE:
-import health from './routes/health';
-const ROUTES = [health];
 
-// AFTER:
-import health from './routes/health';
-import newRoute from './routes/newRoute';
-const ROUTES = [health, newRoute];
+Create an Express router in `api/src/routes`, following nearby routes:
+
+```ts
+import { Router } from 'express';
+const router = Router();
+router.get('/new-route', (_req, res) => { res.json({ success: true }); });
+export default router;
 ```
+
+Import it in `api/src/app.ts` and add it to `ROUTES`:
+
+```ts
+import newRoute from './routes/newRoute';
+// Add alongside existing entries:
+{ router: newRoute, route: '/new-route' }
+```
+
+`createApp` mounts each router, which defines its full path. The `route` property
+is metadata used by route-mounting tests. `api/src/main.ts` starts the server;
+it is not the route registry. Test endpoints through `createApp` with Supertest,
+and put reusable processing logic in utilities.

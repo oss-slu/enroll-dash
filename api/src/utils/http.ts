@@ -14,10 +14,18 @@ export async function getJson<T>(
 ): Promise<T> {
     const { headers = {}, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const timeout = setTimeout(
+        () =>
+            controller.abort(
+                new DOMException('Request deadline exceeded', 'TimeoutError'),
+            ),
+        timeoutMs,
+    );
+    const abort = () => controller.abort(signal?.reason);
 
     if (signal) {
-        signal.addEventListener('abort', () => controller.abort(), {
+        if (signal.aborted) abort();
+        signal.addEventListener('abort', abort, {
             once: true,
         });
     }
@@ -47,14 +55,10 @@ export async function getJson<T>(
         if (err instanceof HttpError) {
             throw err;
         }
-        if (err instanceof Error && err.name === 'AbortError') {
-            throw new Error(
-                `Request to ${url} timed out after ${timeoutMs}ms`,
-                { cause: err },
-            );
-        }
+        if (controller.signal.aborted) throw controller.signal.reason;
         throw err;
     } finally {
         clearTimeout(timeout);
+        signal?.removeEventListener('abort', abort);
     }
 }

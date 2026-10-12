@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { MMDDYY_HHMMSS } from '../utils/datetime';
 import { saveSessionFile, deleteSessionDir } from '../utils/storage';
+import { FileError } from '../errs/file';
 
 const router = express.Router();
 
@@ -86,6 +87,10 @@ router.delete('/upload/:sessionId', fileOpLimiter, async (req, res) => {
         await deleteSessionDir(sessionId);
         res.json({ success: true });
     } catch (err) {
+        if (err instanceof FileError)
+            return res
+                .status(err.status)
+                .json({ success: false, code: err.code, error: err.message });
         console.error('Cleanup error:', err);
         res.status(500).json({ error: 'Failed to clean up directory' });
     }
