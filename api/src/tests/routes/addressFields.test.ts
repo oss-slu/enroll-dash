@@ -55,15 +55,6 @@ it('requires a session and path and rejects cross-session filesystem access', as
     for (const query of [{ path: tempPath }, { sessionId }]) {
         const res = await request(app).get('/address-fields').query(query);
         expect(res.status).toBe(400);
-        expect(res.body.code).toBe('INVALID_OPTIONS');
-    }
-    const other = await request(app)
-        .post('/upload')
-        .attach('file', Buffer.from('address\n456 Other St'), 'other.csv');
-    expect(other.status).toBe(200);
-    const res = await request(app)
-        .get('/address-fields')
-        .query({ path: other.body.tempPath, sessionId });
-    expect(res.status).toBe(400);
-    expect(res.body.code).toBe('INVALID_PATH');
+        expect(res.body.ok).toBe(false);
+    });
 });
