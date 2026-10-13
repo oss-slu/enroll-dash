@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
+//import * as cptable from 'xlsx/dist/cpexcel.full.mjs';
 import { DATA_SOURCE_OPTIONS, type DataSource } from '../consts';
+
 
 const API_BASE_URL = '/api';
 
@@ -59,6 +61,7 @@ function DatasetGeoJoiner() {
             const workbook = XLSX.read(await file.arrayBuffer(), {
                 type: 'array',
                 cellDates: true,
+                codepage: 65001,
             });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
