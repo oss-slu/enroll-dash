@@ -84,5 +84,7 @@ already in use.
 ## File geocoding API
 
 Upload and enrich CSV or Excel datasets, or save a dataset directly. See the
+[API route reference](docs/dev/api_routes.md) for every endpoint, parameter, and
+response, and the
 [file enrichment endpoint contract](docs/dev/geocoder_file_enrichment.md) for
 options, limits, export behavior, and session cleanup.
