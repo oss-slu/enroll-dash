@@ -3,7 +3,6 @@ import * as XLSX from 'xlsx';
 //import * as cptable from 'xlsx/dist/cpexcel.full.mjs';
 import { DATA_SOURCE_OPTIONS, type DataSource } from '../consts';
 
-
 const API_BASE_URL = '/api';
 
 type UploadResponse = {
