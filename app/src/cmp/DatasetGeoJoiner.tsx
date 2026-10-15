@@ -84,7 +84,7 @@ function DatasetGeoJoiner() {
                     type: 'array',
                     cellDates: true,
                 });
-            }    
+            }
 
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
