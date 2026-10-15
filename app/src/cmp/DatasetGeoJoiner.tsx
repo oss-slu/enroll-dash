@@ -57,11 +57,35 @@ function DatasetGeoJoiner() {
 
         try {
             // Read the selected file in the browser for the preview.
-            const workbook = XLSX.read(await file.arrayBuffer(), {
-                type: 'array',
-                cellDates: true,
-                codepage: 65001,
-            });
+            const fileBuffer = await file.arrayBuffer();
+
+            let workbook: XLSX.WorkBook;
+
+            if (extension === 'csv') {
+                const bytes = new Uint8Array(fileBuffer);
+                let csvText: string;
+
+                // Detect common UTF-16 CSV encodings.
+                if (bytes[0] === 0xff && bytes[1] === 0xfe) {
+                    csvText = new TextDecoder('utf-16le').decode(bytes);
+                } else if (bytes[0] === 0xfe && bytes[1] === 0xff) {
+                    csvText = new TextDecoder('utf-16be').decode(bytes);
+                } else {
+                    csvText = new TextDecoder('utf-8').decode(bytes);
+                }
+
+                // Parse decoded text rather than raw CSV bytes.
+                workbook = XLSX.read(csvText, {
+                    type: 'string',
+                    cellDates: true,
+                });
+            } else {
+                workbook = XLSX.read(fileBuffer, {
+                    type: 'array',
+                    cellDates: true,
+                });
+            }    
+
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
             if (!firstSheet) {
