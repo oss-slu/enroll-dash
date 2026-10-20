@@ -55,6 +55,6 @@ it('requires a session and path and rejects cross-session filesystem access', as
     for (const query of [{ path: tempPath }, { sessionId }]) {
         const res = await request(app).get('/address-fields').query(query);
         expect(res.status).toBe(400);
-        expect(res.body.ok).toBe(false);
-    });
+        expect(res.body.success).toBe(false);
+    };
 });
