@@ -43,7 +43,7 @@ services:
             PGPASSWORD: ${PGPASSWORD:?Set PGPASSWORD in .env}
             DUMP_DIR: /dump
         ports:
-            - '${PG_LITE_PORT:-5433}:5432'
+            - '${PG_LITE_PORT:-5532}:5432'
         volumes:
             - db-lite-data:/var/lib/postgresql/data
             - ./scripts/db/dump:/dump
