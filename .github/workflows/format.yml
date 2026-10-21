@@ -22,6 +22,3 @@ jobs:
             
             - name: format backend
               run: cd api && npm ci && npm run fmt 
-                    
-            - name: commit changes
-              run: ./scripts/ci/git-bot

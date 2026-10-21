@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# Produces a restorable dump of the running full database containing only the
+# `acs` tables this project actually uses, plus the metadata tables shrunk to
+# match that reduced set. Assumes the full database is already running.
+#
+# Usage:
+#   ./scripts/db/extract-lite-dump [OUTPUT_FILE]
+#
+# With no argument the dump is written to ${DUMP_DIR:-scripts/db/dump}/enroll-dash-
+# lite.dump (created if missing). Pass a path as the first argument to override.
+# Restore the result into a fresh database with:
+#   pg_restore --clean --if-exists --no-owner --dbname=enroll_dash enroll-dash-lite.dump
+#
+# To keep more tables, add the base id (without the trailing _moe) to
+# KEEP_TABLES below; both <id> and <id>_moe are retained when present.
+
+# Base table ids to retain. The _moe companion is kept automatically when it
+# exists. Add a line here to keep more tables.
+readonly KEEP_TABLES=(
+    b02001
+    b03003
+    b08201
+    b08202
+    b09002
+    b11012
+    b14003
+    b15003
+    b15012
+    b16007
+    b25003
+    b25061
+    b25075
+    b25024
+)
+
+# Full metadata tables retained. census_*_metadata are row-filtered to the kept
+# table ids so they reflect the shrunk schema; geoheader is kept whole.
+readonly METADATA_TABLES=(
+    census_column_metadata
+    census_table_metadata
+    geoheader
+)
+
+readonly SOURCE_SCHEMA='acs'
+readonly STAGING_DB='enroll_dash_extract'
+
+readonly PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+# Default output directory when no path is passed. Inside the `db` container this
+# is the mounted dump directory; on the host it defaults to scripts/db/dump.
+readonly DUMP_DIR="${DUMP_DIR:-${PROJECT_ROOT}/scripts/db/dump}"
+readonly DEFAULT_DUMP_NAME='enroll-dash-lite.dump'
+
+# First argument, if any, is the full output path; otherwise write the default
+# name into DUMP_DIR.
+readonly OUTPUT_FILE="${1:-${DUMP_DIR}/${DEFAULT_DUMP_NAME}}"
+
+# When run locally, load the project's .env so the required credentials do not
+# have to be exported first. Already-exported variables are not overridden.
+if [[ -z "${POSTGRES_USER:-}" || -z "${POSTGRES_PASSWORD:-}" || -z "${PGDATABASE:-}" ]]; then
+    readonly ENV_FILE="${PROJECT_ROOT}/.env"
+    if [[ -f "${ENV_FILE}" ]]; then
+        # Load KEY=VALUE lines without overriding variables already in the
+        # environment, and ignore comments and blank lines.
+        while IFS='=' read -r key value; do
+            [[ "${key}" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+            if [[ -z "${!key+x}" ]]; then
+                export "${key}=${value}"
+            fi
+        done < <(
+            sed -e 's/\r$//' \
+                -e 's/^[[:space:]]*#.*$//' \
+                -e 's/^[[:space:]]*//' \
+                "${ENV_FILE}"
+        )
+    fi
+fi
+
+: "${POSTGRES_USER:?POSTGRES_USER must be set}"
+: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}"
+: "${PGDATABASE:?PGDATABASE must be set}"
+: "${PGHOST:=localhost}"
+
+psql_owner() {
+    PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+        --no-psqlrc \
+        --set=ON_ERROR_STOP=1 \
+        --host="${PGHOST}" \
+        --username="${POSTGRES_USER}" \
+        --dbname="${PGDATABASE}" \
+        "$@"
+}
+
+psql_database() {
+    PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+        --no-psqlrc \
+        --set=ON_ERROR_STOP=1 \
+        --host="${PGHOST}" \
+        --username="${POSTGRES_USER}" \
+        --dbname="$1" \
+        "$2"
+}
+
+pg_dump_database() {
+    PGPASSWORD="${POSTGRES_PASSWORD}" pg_dump \
+        --no-privileges \
+        --no-owner \
+        --format=custom \
+        --host="${PGHOST}" \
+        --username="${POSTGRES_USER}" \
+        --dbname="$1" \
+        "${@:2}"
+}
+
+pg_restore_database() {
+    PGPASSWORD="${POSTGRES_PASSWORD}" pg_restore \
+        --no-owner \
+        --host="${PGHOST}" \
+        --username="${POSTGRES_USER}" \
+        --dbname="$1" \
+        "${@:2}"
+}
+
+cleanup_staging() {
+    psql_owner --command="DROP DATABASE IF EXISTS ${STAGING_DB} WITH (FORCE);"
+}
+
+trap cleanup_staging EXIT
+
+# Fail fast if a requested base id has no physical table to keep.
+echo "Resolving ${SOURCE_SCHEMA} tables to keep..."
+keep_physical_names=()
+for id in "${KEEP_TABLES[@]}"; do
+    found="$(psql_owner \
+        --tuples-only \
+        --command="SELECT table_name \
+            FROM information_schema.tables \
+            WHERE table_schema = '${SOURCE_SCHEMA}' \
+                AND table_name IN ('${id}', '${id}_moe') \
+            ORDER BY table_name;")"
+    if [[ -z "${found}" ]]; then
+        echo "Requested ${SOURCE_SCHEMA}.${id} (or ${id}_moe) was not found in the source database." >&2
+        exit 1
+    fi
+    while IFS= read -r name; do
+        name="${name#"${name%%[![:space:]]*}"}"
+        [[ -n "${name}" ]] && keep_physical_names+=("${name}")
+    done <<<"${found}"
+done
+
+# Uppercase base ids used to filter the census_*_metadata rows.
+meta_in=""
+for id in "${KEEP_TABLES[@]}"; do
+    up_id="$(printf '%s' "${id}" | tr '[:lower:]' '[:upper:]')"
+    if [[ -n "${meta_in}" ]]; then
+        meta_in+=", "
+    fi
+    meta_in+="'${up_id}'"
+done
+
+echo "Creating the ${STAGING_DB} staging database..."
+psql_owner --command="DROP DATABASE IF EXISTS ${STAGING_DB} WITH (FORCE);"
+psql_owner --command="CREATE DATABASE ${STAGING_DB};"
+
+# A --table dump does not recreate its schema, so create the target schema first.
+psql_database "${STAGING_DB}" \
+    --command="CREATE SCHEMA ${SOURCE_SCHEMA};"
+
+table_args=()
+for name in "${keep_physical_names[@]}" "${METADATA_TABLES[@]}"; do
+    table_args+=("--table=${SOURCE_SCHEMA}.${name}")
+done
+
+echo "Copying ${#keep_physical_names[@]} data tables and ${#METADATA_TABLES[@]} metadata tables into the staging database..."
+pg_dump_database \
+    "${PGDATABASE}" \
+    "${table_args[@]}" \
+    | pg_restore_database "${STAGING_DB}"
+
+echo "Shrinking census_*_metadata to the kept table ids (${meta_in})..."
+psql_database "${STAGING_DB}" \
+    --command="DELETE FROM ${SOURCE_SCHEMA}.census_table_metadata WHERE UPPER(table_id) NOT IN (${meta_in});"
+psql_database "${STAGING_DB}" \
+    --command="DELETE FROM ${SOURCE_SCHEMA}.census_column_metadata WHERE UPPER(table_id) NOT IN (${meta_in});"
+
+echo "Writing ${OUTPUT_FILE}..."
+mkdir -p -- "$(dirname -- "${OUTPUT_FILE}")"
+pg_dump_database \
+    "${STAGING_DB}" \
+    --schema="${SOURCE_SCHEMA}" \
+    --file="${OUTPUT_FILE}"
+
+echo "Retained in ${OUTPUT_FILE}:"
+printf '\t%s\n' "${keep_physical_names[@]}" "${METADATA_TABLES[@]}" | sort -u
+
+trap - EXIT
+
+cleanup_staging
+
+echo "Done. Restore with:"
+echo "  pg_restore --clean --if-exists --no-owner --dbname=${PGDATABASE} ${OUTPUT_FILE}"
