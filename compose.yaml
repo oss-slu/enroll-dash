@@ -11,10 +11,42 @@ services:
             PGDATABASE: ${PGDATABASE:?Set PGDATABASE in .env}
             PGUSER: ${PGUSER:?Set PGUSER in .env}
             PGPASSWORD: ${PGPASSWORD:?Set PGPASSWORD in .env}
+            DUMP_DIR: /dump
         ports:
             - '${PGPORT:-5432}:5432'
         volumes:
             - db-data:/var/lib/postgresql/data
+            - ./scripts/db/dump:/dump
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'pg_isready --username "$${POSTGRES_USER}" --dbname "$${PGDATABASE}"',
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    db-lite:
+        build:
+            context: .
+            dockerfile: db-lite.Dockerfile
+        restart: unless-stopped
+        profiles:
+            - lite
+        environment:
+            POSTGRES_DB: ${PGDATABASE:?Set PGDATABASE in .env}
+            POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+            PGDATABASE: ${PGDATABASE:?Set PGDATABASE in .env}
+            PGUSER: ${PGUSER:?Set PGUSER in .env}
+            PGPASSWORD: ${PGPASSWORD:?Set PGPASSWORD in .env}
+            DUMP_DIR: /dump
+        ports:
+            - '${PG_LITE_PORT:-5532}:5432'
+        volumes:
+            - db-lite-data:/var/lib/postgresql/data
+            - ./scripts/db/dump:/dump
         healthcheck:
             test:
                 [
@@ -31,8 +63,8 @@ services:
             dockerfile: api.Dockerfile
         restart: unless-stopped
         environment:
-            PGHOST: db
-            PGPORT: 5432
+            PGHOST: ${PG_APP_HOST:-db}
+            PGPORT: ${PG_APP_PORT:-5432}
             PGDATABASE: ${PGDATABASE:?Set PGDATABASE in .env}
             PGUSER: ${PGUSER:?Set PGUSER in .env}
             PGPASSWORD: ${PGPASSWORD:?Set PGPASSWORD in .env}
@@ -55,3 +87,4 @@ services:
 
 volumes:
     db-data:
+    db-lite-data:

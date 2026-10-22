@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# Brings up the small application database and points the app at it.
+#
+# Assumes the full database service (`db`) is already running. It generates a lite
+# dump if none is present, starts the `db-lite` service (which restores that dump
+# on first initialization), and starts the `api` and `app` services pointed at
+# `db-lite`.
+#
+# Usage:
+#   ./scripts/db/start-app-db
+#
+# Set PG_DATABASE_SERVICE to a different source database service if needed.
+
+readonly PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+readonly COMPOSE_FILE="${PROJECT_ROOT}/compose.yaml"
+readonly DUMP_DIR="${PROJECT_ROOT}/scripts/db/dump"
+
+readonly DATABASE_SERVICE="${PG_DATABASE_SERVICE:-db}"
+readonly LITE_SERVICE="db-lite"
+readonly APP_SERVICES=(api app)
+
+# The application containers reach db-lite over Docker's internal network, which
+# uses the container port 5432. db-lite shares the host port with db, so each is
+# run on its own (the `db-lite` profile keeps them out of a plain `up`).
+readonly APP_HOST="${LITE_SERVICE}"
+readonly APP_PORT="5432"
+
+docker_compose() {
+    docker compose --project-directory="${PROJECT_ROOT}" -f "${COMPOSE_FILE}" "$@"
+}
+
+if ! command -v docker >/dev/null 2>&1; then
+    echo 'docker is required to run start-app-db.' >&2
+    exit 1
+fi
+
+if ! docker_compose ps --services --status running | grep -qx "${DATABASE_SERVICE}"; then
+    echo "Service ${DATABASE_SERVICE} is not running. Start the full database first:" >&2
+    echo "  docker compose up --build --detach --wait db" >&2
+    exit 1
+fi
+
+if [[ -z "$(ls -1 "${DUMP_DIR}"/*.dump 2>/dev/null || true)" ]]; then
+    echo "No lite dump in ${DUMP_DIR}. Generating one from ${DATABASE_SERVICE}..."
+    docker_compose exec "${DATABASE_SERVICE}" extract-lite-dump
+fi
+
+echo "Starting ${LITE_SERVICE} (restores the latest ${DUMP_DIR}/*.dump on first init)..."
+# db-lite shares the host port with db, so stop db first.
+docker_compose stop "${DATABASE_SERVICE}"
+docker_compose up --build --detach --wait "${LITE_SERVICE}"
+
+echo "Starting ${APP_SERVICES[*]} pointed at ${APP_HOST}:${APP_PORT}..."
+# --no-deps keeps api/app from restarting their db dependency on the shared port.
+export PG_APP_HOST="${APP_HOST}"
+export PG_APP_PORT="${APP_PORT}"
+docker_compose up --build --detach --no-deps "${APP_SERVICES[@]}"
+
+echo "Done. The app now uses ${LITE_SERVICE} on ${APP_HOST}:${APP_PORT}."

@@ -37,4 +37,33 @@ export function findAddressFields(
             return [];
         throw err;
     }
+
+    const sheet = workbook.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+        defval: '',
+    });
+
+    if (rows.length === 0) {
+        return [];
+    }
+
+    const headers = Object.keys(rows[0]);
+    const potentialMatches: string[] = [];
+
+    for (const header of headers) {
+        const firstValue = rows[0][header];
+
+        if (typeof firstValue !== 'string' || !firstValue.trim()) {
+            continue;
+        }
+
+        const validation = validateAddress(firstValue);
+
+        if (validation.ok) {
+            potentialMatches.push(header);
+        }
+    }
+
+    return potentialMatches;
 }

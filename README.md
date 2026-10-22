@@ -81,6 +81,79 @@ from `.env`, then run `psql`. The default host connection is
 `localhost:5432`; change `PGPORT` before the first Compose run if that port is
 already in use.
 
+### Run the app against a reduced-size database
+
+The full ACS dump is large, but the project only uses a handful of tables. After
+the full database (`db`) is running, generate a lite dump and start a small
+database for the app:
+
+```sh
+./scripts/db/start-app-db
+```
+
+This does the following:
+
+1. If no dump exists in `scripts/db/dump`, run `extract-lite-dump` against the
+   running `db` service to create `scripts/db/dump/enroll-dash-lite.dump`.
+2. Stop `db` (it shares the host port with `db-lite`), then start the `db-lite`
+   service, which on first initialization restores that dump into a fresh `acs`
+   schema and grants the application role access.
+3. Start the `api` and `app` services pointed at `db-lite`.
+
+`db-lite` lives in the `lite` Compose profile, so a plain `docker compose up`
+never starts it — start it by name (as `start-app-db` does) or with
+`--profile lite`.
+
+You can also extract the dump on its own:
+
+```sh
+docker compose exec db extract-lite-dump
+```
+
+The dump is written into `scripts/db/dump/` (a bind-mounted directory shared with
+the host, so it lands on your machine) as a custom-format `pg_dump` containing
+only the `acs` tables listed in `scripts/db/extract-lite-dump`. The metadata
+tables `census_table_metadata` and `census_column_metadata` are trimmed to the
+kept tables, and `geoheader` is kept whole. `scripts/db/dump` is ignored by Git
+and `db-lite`'s data lives in its own named volume.
+
+To keep additional tables, add the base id (without the trailing `_moe`, which
+is kept automatically) to the `KEEP_TABLES` array at the top of
+`scripts/db/extract-lite-dump`.
+
+### Restore the lite dump
+
+The `db-lite` service restores the dump automatically: on its **first**
+initialization (empty data volume), `scripts/db/acs-lite-init` runs
+`pg_restore` against the newest `scripts/db/dump/*.dump`, then re-applies
+`scripts/db/setup.sql` so the application role gets privileges on the restored
+tables. This is what `start-app-db` relies on.
+
+If the `db-lite` data volume already exists, the restore step is skipped because
+PostgreSQL only runs its initialization scripts on an empty data directory. To
+restore a newer dump, reset the volume first (`--profile lite` selects the
+`db-lite` service):
+
+```sh
+docker compose --profile lite stop db-lite
+docker compose --profile lite rm -f db-lite
+docker volume rm enroll-dash_db-lite-data
+docker compose --profile lite up --build --detach db-lite
+```
+
+You can also restore the dump by hand into any empty database:
+
+```sh
+pg_restore --clean --if-exists --no-owner --dbname=enroll_dash scripts/db/dump/enroll-dash-lite.dump
+```
+
+The dump carries the `acs` schema definition, so the target database does not
+need it pre-created. The dump is produced with `--no-privileges`, so it does not
+grant access to your application role. After a manual restore, either connect as
+the role that owns the restored tables, or re-apply the grants from
+`scripts/db/setup.sql` (as `db-lite` does) so the application role can query the
+data.
+
 ## File geocoding API
 
 Upload and enrich CSV or Excel datasets, or save a dataset directly. See the

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# Runs as the first-initialization script for the small application database.
+# Restores the most recent lite dump found in the mounted dump directory into the
+# freshly created database, then re-applies setup.sql so the application role
+# gets privileges on the restored objects. Intended for the `db-lite` service.
+
+readonly DUMP_DIR="${DUMP_DIR:-/dump}"
+readonly DUMP_GLOB='*.dump'
+readonly SETUP_SQL='/docker-entrypoint-initdb.d/010-setup.sql'
+readonly TARGET_SCHEMA='acs'
+
+: "${POSTGRES_USER:?POSTGRES_USER must be set}"
+: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}"
+: "${PGDATABASE:?PGDATABASE must be set}"
+: "${PGUSER:?PGUSER must be set}"
+: "${PGPASSWORD:?PGPASSWORD must be set}"
+
+psql_owner() {
+    PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+        --no-psqlrc \
+        --set=ON_ERROR_STOP=1 \
+        --username="${POSTGRES_USER}" \
+        --dbname="${PGDATABASE}" \
+        "$@"
+}
+
+apply_database_setup() {
+    APPLICATION_USER="${PGUSER}" \
+        APPLICATION_PASSWORD="${PGPASSWORD}" \
+        psql_owner --file="${SETUP_SQL}"
+}
+
+newest_dump() {
+    # Newest *.dump in DUMP_DIR; empty when none exist.
+    local dumps
+    dumps="$(ls -1t "${DUMP_DIR}"/${DUMP_GLOB} 2>/dev/null || true)"
+    printf '%s' "${dumps%%$'\n'*}"
+}
+
+echo "Locating a lite dump in ${DUMP_DIR}..."
+readonly dump="$(newest_dump)"
+
+if [[ -z "${dump}" ]]; then
+    echo "No ${DUMP_GLOB} found in ${DUMP_DIR}." >&2
+    echo "Generate one first, e.g.: docker compose exec db extract-lite-dump" >&2
+    exit 1
+fi
+
+echo "Restoring ${dump} into ${PGDATABASE}, schema ${TARGET_SCHEMA}..."
+restored=0
+PGPASSWORD="${POSTGRES_PASSWORD}" pg_restore \
+    --clean \
+    --if-exists \
+    --no-owner \
+    --username="${POSTGRES_USER}" \
+    --dbname="${PGDATABASE}" \
+    "${dump}" || restored=$?
+
+# Apply grants even when the restore fails after creating some objects, so the
+# application role can still be authorized.
+apply_database_setup
+
+if ((restored != 0)); then
+    echo "Lite dump restoration failed with status ${restored}." >&2
+    exit "${restored}"
+fi
+
+readonly table_count="$(
+    psql_owner \
+        --tuples-only \
+        --command="SELECT count(*) FROM pg_catalog.pg_tables WHERE schemaname = '${TARGET_SCHEMA}';"
+)"
+
+if ((table_count == 0)); then
+    echo "Restoration finished but no ${TARGET_SCHEMA} tables were created." >&2
+    exit 1
+fi
+
+echo "Lite database ready: ${table_count} ${TARGET_SCHEMA} table(s) in ${PGDATABASE}."
