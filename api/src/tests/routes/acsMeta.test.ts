@@ -35,16 +35,16 @@ describe('GET /acs-metadata', () => {
     it('returns metadata for the requested tables', async () => {
         const rows: MetadataRow[] = [
             {
-                table_id: 'b01001',
-                table_title: 'Sex by Age',
-                column_id: 'b01001_001',
-                column_title: 'Total',
+                table_id: 'B02001',
+                table_title: 'Race',
+                column_id: 'B02001001',
+                column_title: 'Total:',
             },
         ];
         query.mockResolvedValue({ rows });
 
         const res = await request(app).get(
-            '/acs-metadata?tables=b01001&tables=b02001',
+            '/acs-metadata?tables=b02001&tables=b15003',
         );
 
         expect(res.status).toBe(200);
@@ -53,13 +53,29 @@ describe('GET /acs-metadata', () => {
             expect.stringContaining(
                 'where lower(a.table_id) = any($1::text[])',
             ),
-            [['b01001', 'b02001']],
+            [['b02001', 'b15003']],
         );
+    });
+
+    it("trims whitespace and lowercases table IDs", async () => {
+        query.mockResolvedValue({ rows: [] });
+
+        const res = await request(app).get(
+            '/acs-metadata?tables=%20B02001%20',
+        );
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ ok: true, data: [] });
+
+        expect(query).toHaveBeenCalledWith(
+            expect.any(String),
+            [['b02001']]
+        )
     });
 
     it('returns 500 if the metadata query fails', async () => {
         query.mockRejectedValue(new Error('Connection failed'));
-        const res = await request(app).get('/acs-metadata?tables=b01001');
+        const res = await request(app).get('/acs-metadata?tables=b02001');
 
         expect(res.status).toBe(500);
         expect(res.body.ok).toBe(false);
