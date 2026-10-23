@@ -15,6 +15,22 @@ describe('findAddressFields', () => {
         fs.rmSync(tempDir, { recursive: true, force: true });
     });
 
+    it('finds a valid address after blank and invalid values', () => {
+        const filePath = path.join(tempDir, 'mixed-addresses.csv');
+
+        fs.writeFileSync(
+            filePath,
+            [
+                'name,address',
+                'Darcy,',
+                'Alex,Not an address',
+                'Jordan,"1 N. Grand Blvd, Saint Louis, MO 63103"',
+            ].join('\n'),
+        );
+
+        expect(findAddressFields(filePath)).toEqual(['address']);
+    });
+
     it('finds a valid address field in a CSV file', () => {
         const filePath = path.join(tempDir, 'addresses.csv');
 
