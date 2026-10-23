@@ -4,6 +4,8 @@ services:
             context: .
             dockerfile: db.Dockerfile
         restart: unless-stopped
+        profiles:
+            - build-db
         environment:
             POSTGRES_DB: ${PGDATABASE:?Set PGDATABASE in .env}
             POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
@@ -32,8 +34,6 @@ services:
             context: .
             dockerfile: db-lite.Dockerfile
         restart: unless-stopped
-        profiles:
-            - lite
         environment:
             POSTGRES_DB: ${PGDATABASE:?Set PGDATABASE in .env}
             POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
@@ -63,13 +63,13 @@ services:
             dockerfile: api.Dockerfile
         restart: unless-stopped
         environment:
-            PGHOST: ${PG_APP_HOST:-db}
+            PGHOST: ${PG_APP_HOST:-db-lite}
             PGPORT: ${PG_APP_PORT:-5432}
             PGDATABASE: ${PGDATABASE:?Set PGDATABASE in .env}
             PGUSER: ${PGUSER:?Set PGUSER in .env}
             PGPASSWORD: ${PGPASSWORD:?Set PGPASSWORD in .env}
         depends_on:
-            db:
+            db-lite:
                 condition: service_healthy
         ports:
             - 9876:9876
@@ -79,6 +79,8 @@ services:
             context: .
             dockerfile: app.Dockerfile
         restart: unless-stopped
+        profiles:
+            - prod
         ports:
             - 8089:80
         volumes:
