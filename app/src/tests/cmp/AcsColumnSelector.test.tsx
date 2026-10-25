@@ -1,4 +1,3 @@
-
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import AcsColumnSelector from '../../cmp/AcsColumnSelector';
@@ -24,9 +23,7 @@ const metadata = [
     },
 ];
 
-function mockMetadataResponse(
-    data: typeof metadata = metadata,
-) {
+function mockMetadataResponse(data: typeof metadata = metadata) {
     vi.stubGlobal(
         'fetch',
         vi.fn().mockResolvedValue({
@@ -46,9 +43,9 @@ describe('AcsColumnSelector', () => {
 
         render(<AcsColumnSelector />);
 
-        expect(
-            screen.getByRole('status'),
-        ).toHaveTextContent('Loading ACS metadata');
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Loading ACS metadata',
+        );
 
         expect(
             await screen.findByRole('button', {

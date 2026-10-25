@@ -8,9 +8,10 @@ type MetadataRow = {
     column_title: string;
 };
 
-const query = jest.fn<
-    (text: string, params?: unknown[]) => Promise<{ rows: MetadataRow[] }>
->();
+const query =
+    jest.fn<
+        (text: string, params?: unknown[]) => Promise<{ rows: MetadataRow[] }>
+    >();
 
 jest.unstable_mockModule('../../db/connect', () => ({ query }));
 
@@ -57,20 +58,15 @@ describe('GET /acs-metadata', () => {
         );
     });
 
-    it("trims whitespace and lowercases table IDs", async () => {
+    it('trims whitespace and lowercases table IDs', async () => {
         query.mockResolvedValue({ rows: [] });
 
-        const res = await request(app).get(
-            '/acs-metadata?tables=%20B02001%20',
-        );
+        const res = await request(app).get('/acs-metadata?tables=%20B02001%20');
 
         expect(res.status).toBe(200);
         expect(res.body).toEqual({ ok: true, data: [] });
 
-        expect(query).toHaveBeenCalledWith(
-            expect.any(String),
-            [['b02001']]
-        )
+        expect(query).toHaveBeenCalledWith(expect.any(String), [['b02001']]);
     });
 
     it('returns 500 if the metadata query fails', async () => {
@@ -80,5 +76,5 @@ describe('GET /acs-metadata', () => {
         expect(res.status).toBe(500);
         expect(res.body.ok).toBe(false);
         expect(res.body.message).toContain('ACS metadata query failed');
-    })
-})
+    });
+});
