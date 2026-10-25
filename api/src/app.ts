@@ -7,6 +7,7 @@ import addressFields from './routes/addressFields';
 import geocodeFile from './routes/geocodeFile';
 import datasetFile from './routes/datasetFile';
 import { FILE_LIMITS } from './utils/fileLimits';
+import acsMeta from './routes/acsMeta';
 
 export const ROUTES = [
     { router: health, route: '/health' },
@@ -15,6 +16,7 @@ export const ROUTES = [
     { router: addressFields, route: '/address-fields' },
     { router: geocodeFile, route: '/geocode-file' },
     { router: datasetFile, route: '/dataset-file' },
+    { router: acsMeta, route: '/acs-metadata' },
 ];
 
 export function createApp(origin?: string) {
