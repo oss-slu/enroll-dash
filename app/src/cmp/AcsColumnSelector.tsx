@@ -14,17 +14,17 @@ type MetadataResponse = {
     message?: string;
 };
 
-const TABLE_PATTERNS = [
-    'b02001%',
-    'b03003%',
-    'b08201%',
-    'b08202%',
-    'b09002%',
-    'b11012%',
-    'b14003%',
-    'b15003%',
-    'b15012%',
-    'b16007%',
+const TABLE_IDS = [
+    'b02001',
+    'b03003',
+    'b08201',
+    'b08202',
+    'b09002',
+    'b11012',
+    'b14003',
+    'b15003',
+    'b15012',
+    'b16007',
     'b24030',
     'b25003',
     'b25061',
@@ -50,7 +50,7 @@ function AcsColumnSelector() {
             try {
                 const params = new URLSearchParams();
 
-                TABLE_PATTERNS.forEach((table) => {
+                TABLE_IDS.forEach((table) => {
                     params.append('tables', table);
                 });
 
