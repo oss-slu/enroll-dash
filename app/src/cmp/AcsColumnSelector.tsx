@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 
 type MetadataRow = {
@@ -154,9 +153,7 @@ function AcsColumnSelector() {
                                 <button
                                     type="button"
                                     aria-expanded={expanded}
-                                    onClick={() =>
-                                        toggleTable(table.table_id)
-                                    }
+                                    onClick={() => toggleTable(table.table_id)}
                                 >
                                     {table.table_title} ({table.table_id})
                                 </button>
@@ -190,9 +187,7 @@ function AcsColumnSelector() {
                 </ul>
             )}
 
-            <p aria-live="polite">
-                {selectedColumns.size} columns selected
-            </p>
+            <p aria-live="polite">{selectedColumns.size} columns selected</p>
         </section>
     );
 }
