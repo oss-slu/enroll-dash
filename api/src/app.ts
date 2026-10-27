@@ -3,16 +3,18 @@ import express, { type ErrorRequestHandler } from 'express';
 import health from './routes/health';
 import upload from './routes/upload';
 import geocode from './routes/geocode';
+import dbHealth from './routes/dbHealth';
 import addressFields from './routes/addressFields';
 import geocodeFile from './routes/geocodeFile';
 import datasetFile from './routes/datasetFile';
-import { FILE_LIMITS } from './utils/fileLimits';
 import acsMeta from './routes/acsMeta';
+import { FILE_LIMITS } from './utils/fileLimits';
 
 export const ROUTES = [
     { router: health, route: '/health' },
-    { router: geocode, route: '/geocode' },
     { router: upload, route: '/upload' },
+    { router: geocode, route: '/geocode' },
+    { router: dbHealth, route: '/db-health ' },
     { router: addressFields, route: '/address-fields' },
     { router: geocodeFile, route: '/geocode-file' },
     { router: datasetFile, route: '/dataset-file' },

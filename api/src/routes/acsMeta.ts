@@ -22,9 +22,9 @@ router.get('/acs-metadata', async (_req, res) => {
             select a.table_id, b.table_title, a.column_id, a.column_title 
             from acs.census_column_metadata a
             join acs.census_table_metadata b on b.table_id = a.table_id
-            where lower(a.table_id) like any($1::text[])
+            where lower(a.table_id) = any($1::text[])
             order by a.table_id, a.column_id`,
-            [tables.map((table) => table.replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/\\%/g, '%').replace(/\\_/g, '_'))],
+            [tables],
             );
         res.json({
             ok: true,

@@ -4,3 +4,5 @@ node_modules
 # Generated build files
 api/dist/
 app/tsconfig.tsbuildinfo
+scripts/db/dump/*.dump
+!scripts/db/dump/.gitkeep
