@@ -13,25 +13,7 @@ type MetadataResponse = {
     message?: string;
 };
 
-const TABLE_IDS = [
-    'b02001',
-    'b03003',
-    'b08201',
-    'b08202',
-    'b09002',
-    'b11012',
-    'b14003',
-    'b15003',
-    'b15012',
-    'b16007',
-    'b24030',
-    'b25003',
-    'b25061',
-    'b25075',
-    'b25024',
-];
-
-function AcsColumnSelector() {
+function AcsColumnSelector({ table_ids }: { table_ids: string[] }) {
     const [metadata, setMetadata] = useState<MetadataRow[]>([]);
     const [expandedTables, setExpandedTables] = useState<Set<string>>(
         new Set(),
@@ -49,7 +31,7 @@ function AcsColumnSelector() {
             try {
                 const params = new URLSearchParams();
 
-                TABLE_IDS.forEach((table) => {
+                table_ids.forEach((table) => {
                     params.append('tables', table);
                 });
 
@@ -115,6 +97,18 @@ function AcsColumnSelector() {
         });
     }
 
+    function clearColumns(tableId?: string) {
+        if (tableId) {
+            setSelectedColumns((current) => {
+                const next = new Set(current);
+                metadata.filter((row) => row.table_id === tableId).forEach((row) => next.delete(row.column_id));
+                return next;
+            })
+        } else {
+            setSelectedColumns(new Set());
+        }
+    }
+
     const tables = Array.from(
         new Map(
             metadata.map((row) => [
@@ -129,8 +123,8 @@ function AcsColumnSelector() {
 
     return (
         <section aria-labelledby="acs-selector-heading">
-            <h2 id="acs-selector-heading">ACS Columns to Append</h2>
-            <p>Select a table to view its available columns.</p>
+            <h2 id="acs-selector-heading">American Community Survey data fields available:</h2>
+            <span>Select a table to view available data fields</span>
 
             {loading && <p role="status">Loading ACS metadata...</p>}
 
@@ -141,7 +135,7 @@ function AcsColumnSelector() {
             )}
 
             {!loading && !error && tables.length > 0 && (
-                <ul>
+                <div className='col-sel-cont'>
                     {tables.map((table) => {
                         const expanded = expandedTables.has(table.table_id);
                         const columns = metadata.filter(
@@ -149,19 +143,18 @@ function AcsColumnSelector() {
                         );
 
                         return (
-                            <li key={table.table_id}>
+                            <div key={table.table_id} className='col-sel-opt-outer-cont'>
                                 <button
                                     type="button"
                                     aria-expanded={expanded}
                                     onClick={() => toggleTable(table.table_id)}
-                                >
-                                    {table.table_title} ({table.table_id})
+                                > { expanded ? '^' : 'v'}| <b>{table.table_id}:</b> {table.table_title}
                                 </button>
 
                                 {expanded && (
-                                    <ul>
+                                    <div className='col-sel-opt-inner-cont'>
                                         {columns.map((column) => (
-                                            <li key={column.column_id}>
+                                            <div key={column.column_id} className='col-sel-inner-opt'>
                                                 <label>
                                                     <input
                                                         type="checkbox"
@@ -173,20 +166,23 @@ function AcsColumnSelector() {
                                                                 column.column_id,
                                                             )
                                                         }
-                                                    />
-                                                    {column.column_title} (
-                                                    {column.column_id})
+                                                    /><b>{column.column_id}:</b> {column.column_title}
                                                 </label>
-                                            </li>
+                                            </div>
                                         ))}
-                                    </ul>
+                                        <button onClick={() => clearColumns(table.table_id)}>
+                                            Clear {table.table_id} columns
+                                        </button>
+                                    </div>
                                 )}
-                            </li>
+                            </div>
                         );
                     })}
-                </ul>
+                </div>
             )}
-
+            <button onClick={() => clearColumns()}>
+                Clear all columns
+            </button>
             <p aria-live="polite">{selectedColumns.size} columns selected</p>
         </section>
     );

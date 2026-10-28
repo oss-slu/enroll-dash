@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import AcsColumnSelector from '../../cmp/AcsColumnSelector';
+import { TABLE_IDS } from '../../consts';
 
 const metadata = [
     {
@@ -41,7 +42,7 @@ describe('AcsColumnSelector', () => {
     it('loads and displays ACS tables', async () => {
         mockMetadataResponse();
 
-        render(<AcsColumnSelector />);
+        render(<AcsColumnSelector table_ids={TABLE_IDS}/>);
 
         expect(screen.getByRole('status')).toHaveTextContent(
             'Loading ACS metadata',
@@ -49,13 +50,13 @@ describe('AcsColumnSelector', () => {
 
         expect(
             await screen.findByRole('button', {
-                name: /Race.*B02001/,
+                name: /B02001.*Race/,
             }),
         ).toBeInTheDocument();
 
         expect(
             screen.getByRole('button', {
-                name: /Educational Attainment.*B15003/,
+                name: /B15003.*Educational Attainment/,
             }),
         ).toBeInTheDocument();
     });
@@ -63,10 +64,10 @@ describe('AcsColumnSelector', () => {
     it('expands a table and displays its columns', async () => {
         mockMetadataResponse();
 
-        render(<AcsColumnSelector />);
+        render(<AcsColumnSelector table_ids={TABLE_IDS}/>);
 
         const tableButton = await screen.findByRole('button', {
-            name: /Race.*B02001/,
+            name: /B02001.*Race/,
         });
 
         fireEvent.click(tableButton);
@@ -74,23 +75,23 @@ describe('AcsColumnSelector', () => {
         expect(tableButton).toHaveAttribute('aria-expanded', 'true');
 
         expect(
-            screen.getByLabelText(/White alone.*B02001002/),
+            screen.getByLabelText(/B02001002.*White alone/),
         ).toBeInTheDocument();
     });
 
     it('allows columns to be selected and deselected', async () => {
         mockMetadataResponse();
 
-        render(<AcsColumnSelector />);
+        render(<AcsColumnSelector table_ids={TABLE_IDS}/>);
 
         fireEvent.click(
             await screen.findByRole('button', {
-                name: /Race.*B02001/,
+                name: /B02001.*Race/,
             }),
         );
 
         const column = screen.getByRole('checkbox', {
-            name: /White alone.*B02001002/,
+            name: /B02001002.*White alone/,
         });
 
         fireEvent.click(column);
@@ -110,7 +111,7 @@ describe('AcsColumnSelector', () => {
             vi.fn().mockRejectedValue(new Error('Network error')),
         );
 
-        render(<AcsColumnSelector />);
+        render(<AcsColumnSelector table_ids={TABLE_IDS}/>);
 
         expect(await screen.findByRole('alert')).toHaveTextContent(
             'Network error',
