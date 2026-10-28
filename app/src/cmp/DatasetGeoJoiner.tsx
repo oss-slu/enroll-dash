@@ -186,9 +186,9 @@ function DatasetGeoJoiner() {
 
     return (
         <section aria-labelledby="dataset-joiner-heading">
-            <h2 id="dataset-joiner-heading">Dataset Geo Joiner</h2>
+            <h2 id="dataset-joiner-heading">Upload a file</h2>
 
-            <label htmlFor="data-source">Data source</label>
+            {/* <label htmlFor="data-source">Data source</label>
             <select
                 id="data-source"
                 value={dataSource}
@@ -201,13 +201,13 @@ function DatasetGeoJoiner() {
                         {source}
                     </option>
                 ))}
-            </select>
+            </select> */}
 
             {dataSource === 'File Upload' ? (
                 <>
                     <label htmlFor="dataset-file">
-                        Upload CSV or Excel file
-                    </label>
+                        Upload CSV or Excel file...
+                    </label><br></br>
                     <input
                         id="dataset-file"
                         type="file"

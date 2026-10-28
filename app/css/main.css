@@ -1,2 +1,18 @@
-:root {
+.col-sel-cont {
+    padding: 0.4rem;
+}
+.col-sel-opt-inner-cont {
+    border: 1px solid black;
+    width: max-content;
+}
+table {
+    border: 1px solid black;
+    padding: 0.1rem;
+}
+th {
+    border: 1px solid black;
+    background-color: rgb(146, 208, 236);
+}
+td {
+    border: 1px solid black;
 }
