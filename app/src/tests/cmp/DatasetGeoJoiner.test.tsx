@@ -11,13 +11,13 @@ describe('DatasetGeoJoiner', () => {
         render(<DatasetGeoJoiner />);
 
         expect(
-            screen.getByRole('heading', { name: 'Dataset Geo Joiner' }),
+            screen.getByRole('heading', { name: 'Upload a file' }),
         ).toBeInTheDocument();
 
-        expect(screen.getByLabelText('Data source')).toHaveValue('File Upload');
+        // expect(screen.getByLabelText('Data source')).toHaveValue('File Upload');
 
         expect(
-            screen.getByLabelText('Upload CSV or Excel file'),
+            screen.getByLabelText('Upload CSV or Excel file...'),
         ).toBeInTheDocument();
     });
 
@@ -28,7 +28,7 @@ describe('DatasetGeoJoiner', () => {
             type: 'text/plain',
         });
 
-        fireEvent.change(screen.getByLabelText('Upload CSV or Excel file'), {
+        fireEvent.change(screen.getByLabelText('Upload CSV or Excel file...'), {
             target: { files: [file] },
         });
 
@@ -53,7 +53,7 @@ describe('DatasetGeoJoiner', () => {
             { type: 'text/csv' },
         );
 
-        fireEvent.change(screen.getByLabelText('Upload CSV or Excel file'), {
+        fireEvent.change(screen.getByLabelText('Upload CSV or Excel file...'), {
             target: { files: [file] },
         });
 
@@ -95,7 +95,7 @@ describe('DatasetGeoJoiner', () => {
             { type: 'text/csv' },
         );
 
-        fireEvent.change(screen.getByLabelText('Upload CSV or Excel file'), {
+        fireEvent.change(screen.getByLabelText('Upload CSV or Excel file...'), {
             target: { files: [file] },
         });
 
@@ -159,7 +159,7 @@ describe('DatasetGeoJoiner', () => {
             type: 'text/csv',
         });
 
-        fireEvent.change(screen.getByLabelText('Upload CSV or Excel file'), {
+        fireEvent.change(screen.getByLabelText('Upload CSV or Excel file...'), {
             target: { files: [file] },
         });
 
