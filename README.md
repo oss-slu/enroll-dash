@@ -1,5 +1,5 @@
-# [enroll-dash](https://github.com/oss-slu/enroll-dash.git) | [Open Source with SLU](https://oss-slu.github.io)
-**Online tools and dashboards for Saint Louis University's Office of Enrollment**
+# [geo-enricher](https://github.com/oss-slu/geo-enricher.git) | [Open Source with SLU](https://oss-slu.github.io)
+**Web tool for enriching datasets with geographic/demographic data provided by the US Census bureau**
 
 ## <u>Tech stack:</u>
 - ### <u>Frontend</u>
