@@ -218,7 +218,7 @@ describe('/query-acs', () => {
         expect(response.status).toBe(200);
         expect(response.body.data.B02001001).toBe(17);
     });
-
+ 
     it('does not interpolate GEOID value in SQL', async () => {
         query
             .mockResolvedValueOnce({ rows: [metadataRows[0]] })
