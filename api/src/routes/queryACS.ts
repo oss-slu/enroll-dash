@@ -73,7 +73,7 @@ const handleQueryACS: RequestHandler = async (req, res) => {
             if (!match) {
                 return res.status(404).json({
                     ok: false,
-                    error: 'No address matches for ${address}',
+                    error: `No address matches for ${address}`,
                 });
             }
 
