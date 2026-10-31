@@ -23,6 +23,8 @@ dataset contract, limits table, and session cleanup behavior.
 | `GET` | `/geocode-file` | `405` |
 | `POST` | `/dataset-file` | Save a dataset directly |
 | `GET` | `/dataset-file` | `405` |
+| `GET` | `/acs-metadata` | Get table and column metadata |
+| `GET` / `POST` | `/query-acs` | Query selected ACS columns for a GEOID |
 
 File-oriented routes return errors as `success: false` with a machine-readable
 `code` and a safe `error` message (`api/src/utils/fileResponse.ts`). The
@@ -275,3 +277,58 @@ Codes raised by these routes via `FileError` (`api/src/errs/file.ts`) and
 `AMBIGUOUS_ADDRESS_FIELDS` and `NO_ADDRESS_FIELDS` include a `candidates` array
 of column IDs. Unhandled file errors fall back to `500`
 `FILE_OPERATION_FAILED`.
+
+## Query ACS data by address or GEOID
+
+Use `/query-acs` to return selected ACS columns for a block group. Provide address or GEOID, and table and column IDs.
+
+For an address, the route validates it and calls the existing geocoder helper to get its block-group GEOID. For a GEOID, provide either the 12-digit value or a `15000US` - prefixed value. Requested table and column IDs are checked against ACS metadata before the data query is built.
+
+### POST example
+
+With address:
+```http
+POST /query-acs
+Content-Type: application/json
+
+{
+  "address": "6957 Chippewa St, Saint Louis, MO 63109",
+  "tables": ["B02001"],
+  "columns": ["B02001001"]
+}
+```
+
+With `geoid`:
+```json
+{
+  "geoid": "15000US<12-digit-block-group-geoid>",
+  "tables": ["B02001"],
+  "columns": ["B02001001"]
+}
+```
+
+### GET example
+
+```http
+GET /query-acs?geoid=15000US<12-digit-block-group-geoid>&tables=B02001&columns=B02001001
+```
+
+For other table or columns IDs with `GET`, repeat query with respective parameters.
+
+A successful response returns `200` and looks like below. 
+
+```json
+{
+  "ok": true,
+  "geoid": "15000US<12-digit-block-group-geoid>",
+  "data": {
+    "geoid": "15000US<12-digit-block-group-geoid>",
+    "B02001001": 17
+  }
+}
+```
+
+Invalid requests return `400`.
+Addresses with no geocode match or a GEOID with no ACS row returns `404`.
+Geocode failure returns `502`.
+Database failure returns `500`.
